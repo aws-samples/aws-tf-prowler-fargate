@@ -13,11 +13,11 @@ variable "region_primary" {
   description = "AWS Region to deploy to"
 }
 
-# variable "prowler_schedule_task_expression" {
-#   type        = string
-#   default     = "rate(7 days)"
-#   description = "Schedule Expression to run the Prowler AWS Fargate Task"
-# }
+variable "prowler_schedule_task_expression" {
+  type        = string
+  default     = "rate(7 days)"
+  description = "Schedule Expression to run the Prowler AWS Fargate Task"
+}
 
 variable "prowler_container_sg_id" {
   type        = string
