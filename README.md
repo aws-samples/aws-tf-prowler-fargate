@@ -1,4 +1,4 @@
-# `Perform security assessment in AWS Organizations using Prowler on AWS Fargate and Terraform`
+# Perform security assessment in AWS Organizations using Prowler on AWS Fargate and Terraform
 
 ## Description
 
@@ -67,7 +67,7 @@ The following prerequisites are required to deploy the solution:
 1. Download the Terraform code to an environment configured to access the AWS Organizations Management and member accounts.
 
     ``` 
-        git clone https://gitlab.aws.dev/ioawssec/aws-tf-prowler-fargate
+        git clone https://github.com/aws-samples/aws-tf-prowler-fargate
     ```
 
 2. Implement the AWS IAM role module.
