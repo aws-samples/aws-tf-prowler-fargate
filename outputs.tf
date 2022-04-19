@@ -22,4 +22,3 @@ output "cloudwatch_log_group" {
   value       = module.prowler_deployment_account.aws_cloudwatch_log_group
   description = "ARN of the Amazon CloudWatch Log Group"
 }
-
