@@ -1,0 +1,129 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >
+  This template creates an AWS IAM Role with a customer managed policy and two
+  AWS managed policies attached. It sets the trust policy on that IAM Role to permit a named ARN in
+  another AWS account to assume that role. The role name and the ARN of the trusted user can
+  all be passed to the CloudFormation stack as parameters.
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Prowler Roles Deployment
+        Parameters:
+          - pProwlerAccountID
+    ParameterLabels:
+      pS3ProwlerBucketName:
+        default: S3 Prowler Logs Bucket
+Parameters:
+
+  pS3ProwlerBucketName:
+    Description: Provide the name of the s3 bucket used to store prowler data
+    Type: String
+    Default: ''
+    AllowedPattern: '^$|^(?=^.{3,63}$)(?!.*[.-]{2})(?!.*[--]{2})(?!^(?:(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(?!$)|$)){4}$)(^(([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)*([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$)'
+    ConstraintDescription:
+      S3 bucket names can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).
+
+
+  pProwlerAccountID:
+    Description: The account ID of where prowler will be performing scans from
+    Type: String
+    Default: 012345678910
+    AllowedPattern: '^(\d{12})$|^((\d{12}(,|, ))*\d{12})$'
+    ConstraintDescription: Must be 12 digits.
+
+Conditions:
+    pS3ProwlerBucketNameCondition: !Not [!Equals [!Ref pS3ProwlerBucketName, '']]
+    pProwlerAccountIDCondition: !Not [!Equals [!Ref pS3ProwlerBucketName, '012345678910']]
+Resources:
+  rProwlerExecRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: prowler-sec-assessment-role
+      Path: /
+      MaxSessionDuration: 43200
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'sts:AssumeRole'
+            Principal:
+              Service:
+                - ecs-tasks.amazonaws.com
+          - Effect: Allow
+            Action:
+              - 'sts:AssumeRole'
+            Principal:
+              AWS:
+                - !Sub arn:${AWS::Partition}:iam::${pProwlerAccountID}:root
+            Condition:
+              StringLike:
+                aws:PrincipalArn: 
+                  - !Sub  'arn:${AWS::Partition}:iam::${pProwlerAccountID}:role/prowler-sec-assessment-role'
+        
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/SecurityAudit'
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/job-function/ViewOnlyAccess'
+  
+  rProwlerExecPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      ManagedPolicyName: prowler-sec-assessment-policy
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: ProwlerPolicyAdditions
+            Effect: Allow
+            Action:
+              - 'account:Get*'
+              - 'access-analyzer:List*'
+              - 'apigateway:Get*'
+              - 'apigatewayv2:Get*'
+              - 'appstream:DescribeFleets'
+              - 'aws-marketplace:ViewSubscriptions'
+              - 'dax:ListTables'
+              - 'ds:Describe*'
+              - 'ds:Get*'
+              - 'ds:List*'
+              - 'ec2:GetEbsEncryptionByDefault'
+              - 'ecr:Describe*'
+              - 'elasticfilesystem:DescribeBackupPolicy'
+              - 'glue:GetConnections'
+              - 'glue:GetSecurityConfiguration'
+              - 'glue:SearchTables'
+              - 'lambda:GetFunction'
+              - 'lambda:GetAccountSettings'
+              - 'lambda:GetFunctionConfiguration'
+              - 'lambda:GetLayerVersionPolicy'
+              - 'lambda:GetPolicy'
+              - 'opsworks-cm:Describe*'
+              - 'opsworks:Describe*'
+              - 's3:GetAccountPublicAccessBlock'
+              - 'secretsmanager:ListSecretVersionIds'
+              - 'shield:GetSubscriptionState'
+              - 'shield:DescribeProtection'
+              - 'sns:List*'
+              - 'sqs:ListQueueTags'
+              - 'ssm:GetDocument'
+              - 'states:ListActivities'
+              - 'support:Describe*'
+              - 'tag:GetTagKeys'
+            Resource: '*'
+          
+          - Sid: AllowGetPutListObject
+            Effect: Allow
+            Action:
+              - 's3:GetObject'
+              - 's3:PutObject'
+              - 's3:ListBucket'
+            Resource: 
+               - !Sub "arn:${AWS::Partition}:s3:::${pS3ProwlerBucketName}"
+               - !Sub "arn:${AWS::Partition}:s3:::${pS3ProwlerBucketName}/*"
+      Roles:
+        - !Ref rProwlerExecRole
+
+Outputs:
+  rProwlerExecRole:
+    Description: Prowler Role ARNs
+    Value: !GetAtt [rProwlerExecRole, Arn]
