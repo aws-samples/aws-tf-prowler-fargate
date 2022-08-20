@@ -97,6 +97,9 @@ prowler_get_run_parameters() {
         prowler_output_format="csv";
     fi
 
+    echo "[Prowler Config] Selected Group $prowler_scan_group \r\n"
+    echo "[Prowler Config] Selected Output Format $prowler_output_format \r\n"
+
     export prowler_scan_group prowler_output_format 
 }
 
@@ -125,15 +128,16 @@ for accountId in $ACCOUNTS_IN_ORGS; do
         printf "Completed AWS Account: $accountId in %02dh:%02dm:%02ds" $((TOTAL_SEC / 3600)) $((TOTAL_SEC % 3600 / 60)) $((TOTAL_SEC % 60))
         echo ""
 
-        # Upload Prowler Report to S3
-        echo "Prowler Assessment Completed against $accountId. Copying report file to S3 $S3BUCKET."
-        s3_account_session
-        aws s3 mv ./output/ s3://"$S3BUCKET"/reports/ --recursive --include "*.html" --acl bucket-owner-full-control
     } &
 done
 
 # Wait for All Prowler Processes to finish
 wait
+
+# Upload Prowler Report to S3
+echo "Prowler Assessment Completed. Copying report file to S3 $S3BUCKET."
+s3_account_session
+aws s3 mv ./output/ s3://"$S3BUCKET"/reports/ --recursive --include "*.html" --acl bucket-owner-full-control
 
 echo "Assessment reports successfully copied to S3 bucket"
 
