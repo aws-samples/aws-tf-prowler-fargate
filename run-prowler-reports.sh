@@ -58,10 +58,6 @@ master_account_session() {
     export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
 }
 
-# Lookup All Accounts in AWS Organization
-master_account_session
-ACCOUNTS_IN_ORGS=$(aws organizations list-accounts --query Accounts[*].Id --output text)
-
 # Function to Assume Role to S3 Account & Create Session
 s3_account_session() {
     unset_aws
@@ -72,42 +68,46 @@ s3_account_session() {
     export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
 }
 
-prowler_get_run_parameters() {
+prowler_get_config() {
     s3_account_session
+    aws s3 cp s3://"$S3BUCKET"/config/prowler-config.sh ./config/
+
+    chmod 777 ./prowler-config.sh
+    ./prowler-config.sh
+
     #Obtain Prowler Config
-    aws s3 cp s3://"$S3BUCKET"/config/prowler-config.txt ./config/
 
-    # Get the scan group details from the Prowler config file
-    prowler_scan_group=$(grep -i -e "^group=.*$" ./config/prowler-config.txt | sed 's/group=//g' | xargs)
-
-    prowler_scan_group_word_count=$(echo $prowler_scan_group | wc -w)
+    prowler_scan_group_word_count=$(echo $PROWLER_SCAN_GROUP | wc -w)
 
     if [ $prowler_scan_group_word_count == 0 ];then 
         echo "[Prowler Alert]: Your config file doesn't have an scan groups listed. Defaulting to cislevel2";
-        prowler_scan_group="cislevel2";
+        PROWLER_SCAN_GROUP="cislevel2";
     fi
 
-    # Get the output formats from the Prowler config file
-    prowler_output_format=$(grep -i -e "^format=.*$" ./config/prowler-config.txt | sed 's/format=//g' | xargs | sed -e 's/[[:space:]]*//g')
-
-    prowler_output_format_word_count=$(echo $prowler_output_format | wc -w)
+    prowler_output_format_word_count=$(echo $PROWLER_OUTPUT_FORMAT | wc -w)
 
     if [ $prowler_output_format_word_count == 0 ];then 
         echo "[Prowler Alert]: Your config file doesn't have an output format listed. Defaulting to csv";
-        prowler_output_format="csv";
+        PROWLER_OUTPUT_FORMAT="csv";
     fi
 
-    echo "[Prowler Config] Selected Group $prowler_scan_group \r\n"
-    echo "[Prowler Config] Selected Output Format $prowler_output_format \r\n"
-
-    export prowler_scan_group prowler_output_format 
 }
+
+# Get the Prowler Run Variables
+prowler_get_config
+echo "[Prowler Config] Selected Group $PROWLER_SCAN_GROUP \r\n"
+echo "[Prowler Config] Selected Output Format $PROWLER_OUTPUT_FORMAT \r\n"
+
+
+# Lookup All Accounts in AWS Organization
+master_account_session
+ACCOUNTS_IN_ORGS=$(aws organizations list-accounts --query Accounts[*].Id --output text)
+
 
 # Run Prowler against Accounts in AWS Organization
 echo "AWS Accounts in Organization"
 echo "$ACCOUNTS_IN_ORGS"
 PARALLEL_ACCOUNTS="1"
-prowler_get_run_parameters
 
 for accountId in $ACCOUNTS_IN_ORGS; do
     # shellcheck disable=SC2015
@@ -120,7 +120,7 @@ for accountId in $ACCOUNTS_IN_ORGS; do
         echo -e "Assessing AWS Account: $accountId, using Role: $ROLE on $(date)"
         
         # remove -g cislevel for a full report and add other formats if needed
-        ./prowler -R "$ROLE" -A "$accountId" -g "$prowler_scan_group" -M "$prowler_output_format"
+        ./prowler -R "$ROLE" -A "$accountId" -g "$PROWLER_SCAN_GROUP" -M "$PROWLER_OUTPUT_FORMAT"
 
         echo "Report stored locally at: prowler/output/ directory"
         TOTAL_SEC=$((SECONDS - START_TIME))
