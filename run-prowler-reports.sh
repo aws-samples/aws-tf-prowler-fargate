@@ -75,7 +75,7 @@ prowler_get_config() {
     aws s3 cp s3://"$S3BUCKET"/config/prowler-config.txt ./config/
 
     # Get the scan group details from the Prowler config file
-    PROWLER_SCAN_GROUP=$(grep -i -e "^PROWLER_SCAN_GROUP=.*$" ./config/prowler-config.txt | sed 's/PROWLER_SCAN_GROUP=//g' | xargs)
+    PROWLER_SCAN_GROUP=$(grep -i -e "^PROWLER_SCAN_GROUP=.*$" ./config/prowler-config.txt | sed 's/PROWLER_SCAN_GROUP=//g' | sed -e 's/[[:space:]]*//g')
     echo "[Prowler Config] Selected Group $PROWLER_SCAN_GROUP."
 
     prowler_scan_group_word_count=$(echo $PROWLER_SCAN_GROUP | wc -w)
@@ -86,7 +86,7 @@ prowler_get_config() {
     fi
 
     # Get the output formats from the Prowler config file
-    PROWLER_OUTPUT_FORMAT=$(grep -i -e "^PROWLER_OUTPUT_FORMAT=.*$" ./config/prowler-config.txt | sed 's/PROWLER_OUTPUT_FORMAT=//g' | xargs | sed -e 's/[[:space:]]*//g')
+    PROWLER_OUTPUT_FORMAT=$(grep -i -e "^PROWLER_OUTPUT_FORMAT=.*$" ./config/prowler-config.txt | sed 's/PROWLER_OUTPUT_FORMAT=//g' | sed -e 's/[[:space:]]*//g')
     echo "[Prowler Config] Selected Output Format $PROWLER_OUTPUT_FORMAT."
 
     prowler_output_format_word_count=$(echo $PROWLER_OUTPUT_FORMAT | wc -w)
@@ -95,6 +95,9 @@ prowler_get_config() {
         echo "[Prowler Config]: Your config file doesn't have an output format listed. Defaulting to csv";
         PROWLER_OUTPUT_FORMAT="csv";
     fi
+    
+    export PROWLER_SCAN_GROUP
+    export PROWLER_OUTPUT_FORMAT
 
 }
 
@@ -123,7 +126,7 @@ for accountId in $ACCOUNTS_IN_ORGS; do
         echo -e "Assessing AWS Account: $accountId, using Role: $ROLE on $(date)"
         
         # remove -g cislevel for a full report and add other formats if needed
-        ./prowler -R "$ROLE" -A "$accountId" -M "$PROWLER_OUTPUT_FORMAT" -g "$PROWLER_SCAN_GROUP" 
+        ./prowler -R "$ROLE" -A "$accountId" -g "$PROWLER_SCAN_GROUP" -M "$PROWLER_OUTPUT_FORMAT"
 
         echo "Report stored locally at: prowler/output/ directory"
         TOTAL_SEC=$((SECONDS - START_TIME))
