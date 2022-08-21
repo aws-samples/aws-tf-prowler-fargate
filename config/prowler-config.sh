@@ -4,8 +4,8 @@ PROWLER_SCAN_GROUP="cislevel2"
 # Enter the Output formats for your Prowler Report, syntax is format=csv or comma separated if selecting multiple formats format=json,csv,html
 PROWLER_OUTPUT_FORMAT="csv"
 
-export PROWLER_SCAN_GROUP
+export $PROWLER_SCAN_GROUP
 
-export PROWLER_OUTPUT_FORMAT
+export $PROWLER_OUTPUT_FORMAT
 
 
