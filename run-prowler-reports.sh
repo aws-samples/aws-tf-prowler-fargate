@@ -75,6 +75,9 @@ prowler_get_config() {
     chmod 770 ./config/prowler-config.sh
     . ./prowler-config.sh
 
+    echo "[Prowler Config] Selected Group $PROWLER_SCAN_GROUP"
+    echo "[Prowler Config] Selected Output Format $PROWLER_OUTPUT_FORMAT"
+    
     #Obtain Prowler Config
 
     prowler_scan_group_word_count=$(echo $PROWLER_SCAN_GROUP | wc -w)
@@ -82,6 +85,7 @@ prowler_get_config() {
     if [ $prowler_scan_group_word_count == 0 ];then 
         echo "[Prowler Alert]: Your config file doesn't have an scan groups listed. Defaulting to cislevel2";
         PROWLER_SCAN_GROUP="cislevel2";
+        echo "[Prowler Config] Prowler Group Missing, Set to Default $PROWLER_SCAN_GROUP"
     fi
 
     prowler_output_format_word_count=$(echo $PROWLER_OUTPUT_FORMAT | wc -w)
@@ -89,14 +93,13 @@ prowler_get_config() {
     if [ $prowler_output_format_word_count == 0 ];then 
         echo "[Prowler Alert]: Your config file doesn't have an output format listed. Defaulting to csv";
         PROWLER_OUTPUT_FORMAT="csv";
+        echo "[Prowler Config] Prowler Output Format Missing, Set to Default $PROWLER_OUTPUT_FORMAT"
     fi
 
 }
 
 # Get the Prowler Run Variables
 prowler_get_config
-echo "[Prowler Config] Selected Group $PROWLER_SCAN_GROUP \r\n"
-echo "[Prowler Config] Selected Output Format $PROWLER_OUTPUT_FORMAT \r\n"
 
 
 # Lookup All Accounts in AWS Organization
@@ -128,18 +131,17 @@ for accountId in $ACCOUNTS_IN_ORGS; do
         printf "Completed AWS Account: $accountId in %02dh:%02dm:%02ds" $((TOTAL_SEC / 3600)) $((TOTAL_SEC % 3600 / 60)) $((TOTAL_SEC % 60))
         echo ""
 
+        # Upload Prowler Report to S3
+        echo "Prowler Assessment Completed for $accountId. Copying report file to S3 $S3BUCKET."
+        s3_account_session
+        aws s3 mv ./output/ s3://"$S3BUCKET"/reports/ --recursive --include "*.html" --acl bucket-owner-full-control
+        echo "Assessment reports for $accountId successfully copied to S3 bucket"
     } &
 done
 
 # Wait for All Prowler Processes to finish
-wait
+#wait
 
-# Upload Prowler Report to S3
-echo "Prowler Assessment Completed. Copying report file to S3 $S3BUCKET."
-s3_account_session
-aws s3 mv ./output/ s3://"$S3BUCKET"/reports/ --recursive --include "*.html" --acl bucket-owner-full-control
-
-echo "Assessment reports successfully copied to S3 bucket"
 
 # Final Wait for All Prowler Processes to finish
 wait
