@@ -68,34 +68,35 @@ s3_account_session() {
     export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
 }
 
+
 prowler_get_config() {
     s3_account_session
-    aws s3 cp s3://"$S3BUCKET"/config/prowler-config.sh ./config/
-
-    chmod 770 ./config/prowler-config.sh
-    . ./prowler-config.sh
-
-    echo "[Prowler Config] Selected Group $PROWLER_SCAN_GROUP"
-    echo "[Prowler Config] Selected Output Format $PROWLER_OUTPUT_FORMAT"
-    
     #Obtain Prowler Config
+    aws s3 cp s3://"$S3BUCKET"/config/prowler-config.txt ./config/
+
+    # Get the scan group details from the Prowler config file
+    PROWLER_SCAN_GROUP=$(grep -i -e "^PROWLER_SCAN_GROUP=.*$" ./config/prowler-config.txt | sed 's/PROWLER_SCAN_GROUP=//g' | xargs)
+    echo "[Prowler Config] Selected Group $PROWLER_SCAN_GROUP"
 
     prowler_scan_group_word_count=$(echo $PROWLER_SCAN_GROUP | wc -w)
 
     if [ $prowler_scan_group_word_count == 0 ];then 
-        echo "[Prowler Alert]: Your config file doesn't have an scan groups listed. Defaulting to cislevel2";
+        echo "[Prowler Config]: Your config file doesn't have an scan groups listed. Defaulting to cislevel2";
         PROWLER_SCAN_GROUP="cislevel2";
-        echo "[Prowler Config] Prowler Group Missing, Set to Default $PROWLER_SCAN_GROUP"
     fi
+
+    # Get the output formats from the Prowler config file
+    PROWLER_OUTPUT_FORMAT=$(grep -i -e "^PROWLER_OUTPUT_FORMAT=.*$" ./config/prowler-config.txt | sed 's/PROWLER_OUTPUT_FORMAT=//g' | xargs | sed -e 's/[[:space:]]*//g')
+    echo "[Prowler Config] Selected Output Format $PROWLER_OUTPUT_FORMAT"
 
     prowler_output_format_word_count=$(echo $PROWLER_OUTPUT_FORMAT | wc -w)
 
     if [ $prowler_output_format_word_count == 0 ];then 
-        echo "[Prowler Alert]: Your config file doesn't have an output format listed. Defaulting to csv";
+        echo "[Prowler Config]: Your config file doesn't have an output format listed. Defaulting to csv";
         PROWLER_OUTPUT_FORMAT="csv";
-        echo "[Prowler Config] Prowler Output Format Missing, Set to Default $PROWLER_OUTPUT_FORMAT"
     fi
 
+    export PROWLER_SCAN_GROUP PROWLER_OUTPUT_FORMAT 
 }
 
 # Get the Prowler Run Variables
