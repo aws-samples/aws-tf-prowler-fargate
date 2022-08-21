@@ -72,7 +72,7 @@ prowler_get_config() {
     s3_account_session
     aws s3 cp s3://"$S3BUCKET"/config/prowler-config.sh ./config/
 
-    chmod 777 ./prowler-config.sh
+    chmod 770 ./config/prowler-config.sh
     . ./prowler-config.sh
 
     #Obtain Prowler Config
