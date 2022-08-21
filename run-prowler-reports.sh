@@ -76,7 +76,7 @@ prowler_get_config() {
 
     # Get the scan group details from the Prowler config file
     PROWLER_SCAN_GROUP=$(grep -i -e "^PROWLER_SCAN_GROUP=.*$" ./config/prowler-config.txt | sed 's/PROWLER_SCAN_GROUP=//g' | xargs)
-    echo "[Prowler Config] Selected Group $PROWLER_SCAN_GROUP"
+    echo "[Prowler Config] Selected Group $PROWLER_SCAN_GROUP."
 
     prowler_scan_group_word_count=$(echo $PROWLER_SCAN_GROUP | wc -w)
 
@@ -87,7 +87,7 @@ prowler_get_config() {
 
     # Get the output formats from the Prowler config file
     PROWLER_OUTPUT_FORMAT=$(grep -i -e "^PROWLER_OUTPUT_FORMAT=.*$" ./config/prowler-config.txt | sed 's/PROWLER_OUTPUT_FORMAT=//g' | xargs | sed -e 's/[[:space:]]*//g')
-    echo "[Prowler Config] Selected Output Format $PROWLER_OUTPUT_FORMAT"
+    echo "[Prowler Config] Selected Output Format $PROWLER_OUTPUT_FORMAT."
 
     prowler_output_format_word_count=$(echo $PROWLER_OUTPUT_FORMAT | wc -w)
 
@@ -96,7 +96,6 @@ prowler_get_config() {
         PROWLER_OUTPUT_FORMAT="csv";
     fi
 
-    export PROWLER_SCAN_GROUP PROWLER_OUTPUT_FORMAT 
 }
 
 # Get the Prowler Run Variables
@@ -124,7 +123,7 @@ for accountId in $ACCOUNTS_IN_ORGS; do
         echo -e "Assessing AWS Account: $accountId, using Role: $ROLE on $(date)"
         
         # remove -g cislevel for a full report and add other formats if needed
-        ./prowler -R "$ROLE" -A "$accountId" -g $PROWLER_SCAN_GROUP -M $PROWLER_OUTPUT_FORMAT
+        ./prowler -R "$ROLE" -A "$accountId" -g "$PROWLER_SCAN_GROUP" -M "$PROWLER_OUTPUT_FORMAT"
 
         echo "Report stored locally at: prowler/output/ directory"
         TOTAL_SEC=$((SECONDS - START_TIME))
