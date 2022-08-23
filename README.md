@@ -31,28 +31,28 @@ The following prerequisites are required to deploy the solution:
 
 3. Access to an AWS Organizations privileged user or role that can deploy roles into your organizations sub-accounts.
 
-4. Network Requirements (you will need the Subnet and VPC IDs in your input variables.):
+4. Network Requirements (you will need the Subnet and VPC IDs in your input variables):
 
-5. A VPC with 1 subnet that has access to the Internet; AND
+    * A VPC with 1 subnet that has access to the Internet; AND
 
-6. A security group that allows outbound access on Port 443 (HTTPS).
+    * A security group that allows outbound access on Port 443 (HTTPS).
 
-7. Download and set up Terraform. Refer to the official Terraform instructions to get started.
+5. Download and set up Terraform. Refer to the official Terraform instructions to get started.
 
-8. Make sure that your Terraform environment is able to assume an administrative role to implement the resources described in this blog across your member and prowler deployment accounts.
+6. Make sure that your Terraform environment is able to assume an administrative role to implement the resources described in this blog across your member and prowler deployment accounts.
 
-9. Install Git
+7. Install Git
 
-10. Install latest version of the AWS CLI or use the AWS CloudShell. To use the AWS CLI, you must make sure that you have profiles to assume roles across your accounts. You can get more information about creating CLI configuration files in the AWS CLI user guide.
+8. Install latest version of the AWS CLI or use the AWS CloudShell. To use the AWS CLI, you must make sure that you have profiles to assume roles across your accounts. You can get more information about creating CLI configuration files in the AWS CLI user guide.
 
     * Note: The docker image will need to be built and pushed to the ecr outside of CloudShell. There isn't support for running Docker in CloudShell currently.
 
-11. Decide on the appropriate account in which to deploy the Prowler solution (ECS task). AWS recommends deploying the solution in the security account.
+9. Decide on the appropriate account in which to deploy the Prowler solution (ECS task). AWS recommends deploying the solution in the security account.
 
-12. Get and install Docker where you plan to build the Prowler container image.
+10. Get and install Docker where you plan to build the Prowler container image.
     * **If using a Mac with the new Apple Silicon M processor**, you will need to use the [experimental docker feature](https://blog.jaimyn.dev/how-to-build-multi-architecture-docker-images-on-an-m1-mac/) to build the x86 image.
 
-13. Clone the AWS Samples Github repository:
+11. Clone the AWS Samples Github repository:
 
     ```
     git clone https://github.com/aws-samples/aws-tf-prowler-fargate.git
