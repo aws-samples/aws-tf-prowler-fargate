@@ -1,4 +1,4 @@
-# Call Module to Deploy the Prowler ECS Instance and Role
+## Call Module to Deploy the Prowler ECS Instance and Role
 module "prowler_ecs_instance_deployment" {
   source = "./modules/aws-tf-prowler-fargate"
   providers = {
@@ -21,14 +21,27 @@ module "prowler_ecs_instance_deployment" {
 }
 
 
-# Call Module to Deploy the Prowler Cross-Account Role
-module "prowler_iam_cross_account_role" {
+#Call Module to Deploy the Prowler Cross-Account Role
+module "prowler_iam_cross_account_role_1" {
   source = "./modules/aws-tf-iam-role"
   providers = {
-    aws = aws.prowler_account_to_scan
+    aws = aws.prowler_account_scan_account_1
   }
   
   # The AWS account id for the account that will run Prowler.
   deployment_accountid = var.deployment_accountid
+  prowler_s3 = "prowler-111111111111-us-west-2"
+
+}
+
+module "prowler_iam_cross_account_role_2" {
+  source = "./modules/aws-tf-iam-role"
+  providers = {
+    aws = aws.prowler_account_scan_account_2
+  }
+  
+  # The AWS account id for the account that will run Prowler.
+  deployment_accountid = var.deployment_accountid
+  prowler_s3 = "prowler-111111111111-us-west-2"
 
 }
