@@ -279,6 +279,8 @@ Modify the [main.tf](./main.tf) file in the root module using a text editor and 
 
 * Before applying any configuration changes, Terraform prints out the execution plan to describe the actions that Terraform will take to update your infrastructure. Once prompted, you will need to type `yes` to confirm that the plan can be run.
 
+* Take note of the S3 Prowler Bucket name once it’s created. You will need the bucket name when deploying the cross-account role in the following steps.
+
 ### Deploy the Prowler Cross-Account IAM Role
 
 **Do NOT deploy this role into the prowler deployment account (the account that will be hosting your prowler instance, e.g. security account).** The main Prowler module that deploys the ECS instance and task also creates a slightly modified version of the prowler role in the deployment account.
@@ -314,7 +316,7 @@ Modify the [main.tf](./main.tf) file in the root module using a text editor and 
     # }
     ```
 
-2. Update the module block for prowler_iam_cross_account_role_# in [main.tf](./main.tf) in the root directory. The code should look similar to the following:
+2. Update the [aws-tf-iam-role](./modules/aws-tf-iam-role/) module block for prowler_iam_cross_account_role_# in [main.tf](./main.tf) in the root directory. The code should look similar to the examples below:
    
     **Example 1:**
     
@@ -389,7 +391,7 @@ Modify the [main.tf](./main.tf) file in the root module using a text editor and 
 
 ### Manually run the container task
 
-By default, the Prowler task is configured to run every 7 days using the CloudWatch Event Rule. You can trigger a manual run of the task using the following command. Ensure you replace the value of the `subnet-0111111111111111111` with your subnet id. In addition, the task requires Internet connection to download Prowler source code.
+By default, the Prowler task is configured to run **every 7 days** using the CloudWatch Event Rule. You can trigger a manual run of the task using the following command. Ensure you replace the value of the `subnet-0111111111111111111` with your subnet id. In addition, the task requires Internet connection to download the Prowler source code.
 
 ```
     aws ecs run-task --launch-type FARGATE \
