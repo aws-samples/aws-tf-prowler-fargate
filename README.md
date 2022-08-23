@@ -100,50 +100,54 @@ The following prerequisites are required to deploy the solution:
 
 ### Create an Amazon ECR Repository
     
-    Perform the following steps in your Prowler deployment account (for example, Security account):
+Perform the following steps in your Prowler deployment account (for example, Security account):
     
-    * Create an Amazon ECR repository using the [AWS CloudShell](https://aws.amazon.com/cloudshell/).
-    
-        ```bash 
-        aws ecr create-repository \
-            --repository-name prowler-repo \
-            --image-scanning-configuration scanOnPush=true \
-            --encryption-configuration encryptionType=KMS
-        ```
-    * Make a note of the ECR repository URI. Format: 01234567890.dkr.ecr.us-east-1.amazonaws.com/prowler-repo.
-    * To list your ECR repositories use the following command:
-        ```
-        aws ecr describe-repositories
-        ```
+1. Create an Amazon ECR repository using the [AWS CloudShell](https://aws.amazon.com/cloudshell/).
+
+    ```    
+    aws ecr create-repository \
+    --repository-name prowler-repo \
+    --image-scanning-configuration scanOnPush=true \
+    --encryption-configuration encryptionType=KMS
+    ```
+
+2. Make a note of the ECR repository URI. Format: 01234567890.dkr.ecr.us-east-1.amazonaws.com/prowler-repo.
+
+3. To list your ECR repositories use the following command:
+
+    ```
+    aws ecr describe-repositories
+    ```
 
 ### Update Prowler Configuration File
 
-    The primary prowler configuration for running the scans is contained in [prowler-config.txt](./config/prowler-config.txt). You can customize your scan parameters to ensure Prowler is running the appropriate checks for your environment. 
+The primary prowler configuration for running the scans is contained in [prowler-config.txt](./config/prowler-config.txt). You can customize your scan parameters to ensure Prowler is running the appropriate checks for your environment. 
 
-    Update the variables in prowler-config.txt to configure the checks prowler runs (-g cislevel2) and the report output format (-M csv).
+Update the variables in [prowler-config.txt](./config/prowler-config.txt) to configure the checks prowler runs (-g cislevel2) and the report output format (-M csv).
 
-    * A list of available groups can be found here. Note you cannot run multiple groups simultaneously.
+A list of available groups can be found here. Note you cannot run multiple groups simultaneously.
 
-    * A list of supported output formats (you can select multiple): csv,json,json-asff,html
+A list of supported output formats (you can select multiple): csv,json,json-asff,html
 
-    **Example 1:** Run Prowler checks from the extras group and output the report to CSV.
+1. **Example 1:** Run Prowler checks from the extras group and output the report to CSV.
 
-        Edit the following in prowler-config.txt:
-        ```
-        PROWLER_SCAN_GROUP=extras
+    Edit the following in prowler-config.txt:
+        
+    ```
+    PROWLER_SCAN_GROUP=extras
 
-        PROWLER_OUTPUT_FORMAT=csv
-        ```
+    PROWLER_OUTPUT_FORMAT=csv
+    ```
 
-    **Example 2:** Run Prowler checks from the cislevel2 group and output the report to CSV, JSON, and HTML.
+2. **Example 2:** Run Prowler checks from the cislevel2 group and output the report to CSV, JSON, and HTML.
 
-        Edit the following in prowler-config.txt:
+    Edit the following in prowler-config.txt:
 
-        ```
-        PROWLER_SCAN_GROUP=cislevel2
+    ```
+    PROWLER_SCAN_GROUP=cislevel2
 
-        PROWLER_OUTPUT_FORMAT=csv,json,html
-        ```
+    PROWLER_OUTPUT_FORMAT=csv,json,html
+    ```
 
 
 
@@ -169,6 +173,7 @@ The following prerequisites are required to deploy the solution:
 
 
 3. Tag Prowler Docker Image
+    
     MacOS, Linux, Windows
 
     ```
@@ -182,11 +187,12 @@ The following prerequisites are required to deploy the solution:
     ```
     docker push 01234567890.dkr.ecr.us-east-1.amazonaws.com/prowler:latest
     ```
+
 ### Update Terraform Configuration
 
-To implement Prowler in a designated Prowler deployment account, update the main.tf file in the solution's root directory with your input variables referencing variables.tf (Example 1) or hard code the variables directly into main.tf (Example 2)
+To implement Prowler in a designated Prowler deployment account, update the [main.tf](./main.tf) file in the solution's root directory with your input variables referencing [variables.tf](./variables.tf) (Example 1) or hard code the variables directly into [main.tf](./main.tf) (Example 2)
 
-**Example 1:**
+1. **Example 1:**
 If you use the format below you will need to hard code the variables in variables.tf or you will need to provide them in a myvariables.tfvars file and pass it into the terraform apply command as follows. 
 
     ```
@@ -215,7 +221,8 @@ If you use the format below you will need to hard code the variables in variable
         }
     ```
 
-**Example 2:**
+2. **Example 2:**
+
     ```
     module "prowler_ecs_instance_deployment" {
       source = "./modules/aws-tf-prowler-fargate"
@@ -241,23 +248,23 @@ If you use the format below you will need to hard code the variables in variable
 
 ### Deploy Terraform code
 
-    - Modify the [main.tf](./main.tf) file in the root module using a text editor and update the source variable parameters, deployment account id, ECR image URI (from step 3), VPC security group id and subnet id, and the CloudWatch Event [Schedule Expression Rule](https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/ScheduledEvents.html). The `source` argument in a [module block](https://www.terraform.io/docs/language/modules/syntax.html) tells Terraform where to find the source code for the desired child module. Typical sources include Terraform Registry, local paths, S3 buckets, and many more. See the documentation on [Terraform Module Sources](https://www.terraform.io/docs/language/modules/sources.html) for additional information.
+Modify the [main.tf](./main.tf) file in the root module using a text editor and update the source variable parameters, deployment account id, ECR image URI (from step 3), VPC security group id and subnet id, and the CloudWatch Event [Schedule Expression Rule](https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/ScheduledEvents.html). The `source` argument in a [module block](https://www.terraform.io/docs/language/modules/syntax.html) tells Terraform where to find the source code for the desired child module. Typical sources include Terraform Registry, local paths, S3 buckets, and many more. See the documentation on [Terraform Module Sources](https://www.terraform.io/docs/language/modules/sources.html) for additional information.
     
-    - Now that you have updated the script with your variable configuration, you can initialize the directory. Initializing a configuration directory downloads and installs the AWS provider, which is defined in the configuration:
+* Now that you have updated the script with your variable configuration, you can initialize the directory. Initializing a configuration directory downloads and installs the AWS provider, which is defined in the configuration:
 
     ``` 
         terraform init
     ```
     You should see a message that says `Terraform has been successfully initialized!` and the version of the provider that was installed.
 
-    - You should format and validate your configuration. The `terraform fmt` command automatically updates configurations in the current directory for readability and consistency. You can also make sure that your configuration is syntactically valid and consistent using the `terraform validate` command:
+* You should format and validate your configuration. The `terraform fmt` command automatically updates configurations in the current directory for readability and consistency. You can also make sure that your configuration is syntactically valid and consistent using the `terraform validate` command:
 
     ``` 
         terraform fmt
         terraform validate
     ```
 
-    - Apply the configuration to create the infrastructure:
+* Apply the configuration to create the infrastructure:
 
     ``` 
         terraform apply
@@ -270,11 +277,16 @@ If you use the format below you will need to hard code the variables in variable
     terraform apply -var-file myvariables-example.tfvars
     ```
 
-    Before applying any configuration changes, Terraform prints out the execution plan to describe the actions that Terraform will take to update your infrastructure. Once prompted, you will need to type `yes` to confirm that the plan can be run.
+* Before applying any configuration changes, Terraform prints out the execution plan to describe the actions that Terraform will take to update your infrastructure. Once prompted, you will need to type `yes` to confirm that the plan can be run.
 
 ### Deploy the Prowler Cross-Account IAM Role
 
 **Do NOT deploy this role into the prowler deployment account (the account that will be hosting your prowler instance, e.g. security account).** The main Prowler module that deploys the ECS instance and task also creates a slightly modified version of the prowler role in the deployment account.
+
+* Deploy the  [aws-tf-iam-role](./modules/aws-tf-iam-role/main.tf) module to your AWS Organizations Management account.
+
+* Deploy the [aws-tf-iam-role](./modules/aws-tf-iam-role/main.tf)  module to your AWS Organizations member accounts to be assessed by Prowler. 
+
 
 1. You will need to comment out the [aws-tf-prowler-fargate](./modules/aws-tf-prowler-fargate/main.tf) module block from [main.tf](./main.tf). 
 
@@ -302,12 +314,12 @@ If you use the format below you will need to hard code the variables in variable
     # }
     ```
 
-2. Run the prowler code by updating the module block in main.tf in the root directory. The code should look similar to the following:
+2. Update the module block for prowler_iam_cross_account_role_# in [main.tf](./main.tf) in the root directory. The code should look similar to the following:
    
-    * The prowler_s3 bucket should be the name of the bucket that was deployed by the [aws-tf-prowler-fargate](./modules/aws-tf-prowler-fargate/main.tf) module.
-
-
     **Example 1:**
+    
+    The prowler_s3 bucket should be the name of the bucket that was deployed by the [aws-tf-prowler-fargate](./modules/aws-tf-prowler-fargate/main.tf) module.
+
     ```
     module "prowler_iam_cross_account_role_1" {
     source = "./modules/aws-tf-iam-role"
@@ -337,10 +349,9 @@ If you use the format below you will need to hard code the variables in variable
     }
     ```
 
-3. Deploy the  [aws-tf-iam-role](./modules/aws-tf-iam-role/main.tf) module to your AWS Organizations Management account.
+3.  Update the [providers.tf](./providers.tf) file to deploy to multiple accounts. 
 
-4. Deploy the [aws-tf-iam-role](./modules/aws-tf-iam-role/main.tf)  module to your AWS Organizations member accounts to be assessed by Prowler. 
-    * You will need to update [main.tf](./main.tf) in the root directory (as specified in the steps above) and the [providers.tf](./providers.tf) file to deploy to multiple accounts. Specific guidance on multi-account deployment is not in scope for this article since this can be accomplished through several methods depending on your particular environment, configuration, and personal preference. Please see the official Terraform documentation on multi-account deployments with Terraform.
+    Specific guidance on multi-account deployment is not in scope for this article since this can be accomplished through several methods depending on your particular environment, configuration, and personal preference. Please see the official Terraform documentation on multi-account deployments with Terraform. The examples below are provided as a reference point.
 
     Example of [providers.tf](./providers.tf) configuration to deploy to multiple accounts.
 
@@ -372,18 +383,20 @@ If you use the format below you will need to hard code the variables in variable
     }
     ```
 
+
+
 4. Alternatively, this role can be deployed with CloudFormation StackSets. The CloudFormation template file is available [here](./extras/aws-tf-iam-role.yaml).
 
 ### Manually run the container task
 
-    By default, the Prowler task is configured to run every 7 days using the CloudWatch Event Rule. You can trigger a manual run of the task using the following command. Ensure you replace the value of the `subnet-0111111111111111111` with your subnet id. In addition, the task requires Internet connection to download Prowler source code.
+By default, the Prowler task is configured to run every 7 days using the CloudWatch Event Rule. You can trigger a manual run of the task using the following command. Ensure you replace the value of the `subnet-0111111111111111111` with your subnet id. In addition, the task requires Internet connection to download Prowler source code.
 
-    ```
-        aws ecs run-task --launch-type FARGATE \
-        --task-definition prowler-security-assessment \
-        --cluster prowler-security-assessment-cluster \
-        --network-configuration "awsvpcConfiguration={subnets=[subnet-0111111111111111111],assignPublicIp=ENABLED}"
-    ```
+```
+    aws ecs run-task --launch-type FARGATE \
+    --task-definition prowler-security-assessment \
+    --cluster prowler-security-assessment-cluster \
+    --network-configuration "awsvpcConfiguration={subnets=[subnet-0111111111111111111],assignPublicIp=ENABLED}"
+```
 
 You have successfully implemented the Prowler security assessment tool on AWS Fargate using Terrraform. You should see see logs from the container tasks in your ECS task definition.
 ## ![](./images/aws-tf-prowler-fargate.png)
