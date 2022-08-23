@@ -6,7 +6,7 @@ terraform {
   # }
 
   backend "s3" {
-    bucket = "resmed-terraform-state-bucket"
+    bucket = "example-terraform-state-bucket"
     key    = "prowler/"
     region = "us-west-2"
   }
@@ -25,8 +25,7 @@ provider "aws" {
   alias   = "prowler_account_scan_account_1"
   
   assume_role {
-    #role_arn     = "arn:aws:iam::123456789012:role/ROLE_NAME"
-    role_arn      = "arn:aws:iam::342057286659:role/Admin"
+    role_arn     = "arn:aws:iam::123456789012:role/ROLE_NAME"
     session_name = "deploy_prowler_role"
     #external_id  = "EXTERNAL_ID"
   }
@@ -39,8 +38,7 @@ provider "aws" {
   alias   = "prowler_account_scan_account_2"
   
   assume_role {
-    #role_arn     = "arn:aws:iam::123456789012:role/ROLE_NAME"
-    role_arn      = "arn:aws:iam::605706657514:role/Admin"
+    role_arn     = "arn:aws:iam::123456789012:role/ROLE_NAME"
     session_name = "deploy_prowler_role"
     #external_id  = "EXTERNAL_ID"
   }

@@ -30,7 +30,7 @@ module "prowler_iam_cross_account_role_1" {
   
   # The AWS account id for the account that will run Prowler.
   deployment_accountid = var.deployment_accountid
-  prowler_s3 = "prowler-890812852525-us-west-2"
+  prowler_s3 = "prowler-111111111111-us-west-2"
 
 }
 
@@ -42,6 +42,6 @@ module "prowler_iam_cross_account_role_2" {
   
   # The AWS account id for the account that will run Prowler.
   deployment_accountid = var.deployment_accountid
-  prowler_s3 = "prowler-890812852525-us-west-2"
+  prowler_s3 = "prowler-111111111111-us-west-2"
 
 }
