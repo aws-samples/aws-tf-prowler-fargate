@@ -388,6 +388,40 @@ If you use the format below you will need to hard code the variables in variable
 You have successfully implemented the Prowler security assessment tool on AWS Fargate using Terrraform. You should see see logs from the container tasks in your ECS task definition.
 ## ![](./images/aws-tf-prowler-fargate.png)
 
+### Check Prowler Scan Status
+
+Utilize CloudWatch Insights to find the current status of your Prowler scan.
+
+1. Login to the AWS Console and navigate the CloudWatch.
+
+2. From the CloudWatch main page navigate to Logs then Logs Insights in the lefthand menu.
+
+3. On the Logs Insights page select the Prowler log group from the dropdown menu.
+
+4. Select the appropriate timeframe for your search.
+
+5. Enter one of the queries below.
+
+    * Find Scan Start Time
+    ```
+    fields @message | parse @message “Assessing AWS Account: *, *” as @account_id, @starttime | filter ispresent(@account_id)| sort @account_id desc | display @account_id, @timestamp, @starttime  
+    ```
+
+    * Find Scan End Time
+    ```
+    fields @message
+    | parse @message “Completed AWS Account: * in *” as @account_id, @endtime
+    | filter ispresent(@account_id)
+    | sort @account_id desc
+    | display @account_id, @timestamp, @endtime
+    ```
+    * Regex to Extract Scan Start and End Times
+    ```
+    fields @message
+    | parse @message /Assessing AWS Account: (?<account_id_start>[0-9]{12}), using Role: prowler-sec-assessment-role on (?<start_time>.*)|Completed AWS Account: (?<account_id_completed>[0-9]{12}) in (?<end_time>.+)/
+    | sort @account_id_start asc
+    ```
+
 ## Related Resources
 
 Prowler supports native integration to send findings to AWS Security Hub. This integration allows Prowler to import its findings to AWS Security Hub for a comprehensive view which aggregates, organizes, and prioritizes your security alerts or findings. Refer to the [Security Hub Integration](https://github.com/prowler-cloud/prowler#security-hub-integration) for further information.
