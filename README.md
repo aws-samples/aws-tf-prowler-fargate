@@ -11,6 +11,9 @@ With AWS Fargate, there are no upfront costs and you pay only for the resources 
 - Programmatically assess the security posture of your accounts in AWS Organizations using Terraform Infrastructure as Code.
 - Send Prowler findings to S3 Bucket.
 
+## Architecture
+![Prowler-Solution-Architecture](./images/Prowler-ECS-Architecture.png)
+
 ## Solution overview
 
 The solution works as follows:
