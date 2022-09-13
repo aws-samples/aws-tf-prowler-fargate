@@ -196,10 +196,14 @@ A list of supported output formats (you can select multiple): csv,json,json-asff
 To implement Prowler in a designated Prowler deployment account, update the [main.tf](./main.tf) file in the solution's root directory with your input variables referencing [variables.tf](./variables.tf) (Example 1) or hard code the variables directly into [main.tf](./main.tf) (Example 2)
 
 1. **Example 1:**
-If you use the format below you will need to hard code the variables in variables.tf or you will need to provide them in a myvariables.tfvars file and pass it into the terraform apply command as follows. 
+If you use the format below you will need to hard code the variables in variables.tf or you will need to provide them in a [myvariables.tfvars](./myvariables-example.tfvars) file and pass it into the terraform apply command as follows. 
 
     ```
-    terraform apply -var-file [myvariables-example.tfvars](./myvariables-example.tfvars)
+    terraform apply
+
+    # OR
+
+    terraform apply -var-file myvariables-example.tfvars
     ```
     ```
         module "prowler_ecs_instance_deployment" {
