@@ -288,9 +288,11 @@ Modify the [main.tf](./main.tf) file in the root module using a text editor and 
 
 **Do NOT deploy this role into the prowler deployment account (the account that will be hosting your prowler instance, e.g. security account).** The main Prowler module that deploys the ECS instance and task also creates a slightly modified version of the prowler role in the deployment account.
 
-* Deploy the  [aws-tf-iam-role](./modules/aws-tf-iam-role/main.tf) module to your AWS Organizations Management account.
+* __Deploy the  [aws-tf-iam-role](./modules/aws-tf-iam-role/main.tf) module to your AWS Organizations Management account.__
 
-* Deploy the [aws-tf-iam-role](./modules/aws-tf-iam-role/main.tf)  module to your AWS Organizations member accounts to be assessed by Prowler. 
+    If you don't deploy the Prowler cross account role into your management account you will see permissions errors in the Prowler task logs when you attempt to run the ECS task.
+
+* __Deploy the [aws-tf-iam-role](./modules/aws-tf-iam-role/main.tf)  module to your AWS Organizations member accounts to be assessed by Prowler.__
 
 
 1. You will need to comment out the [aws-tf-prowler-fargate](./modules/aws-tf-prowler-fargate/main.tf) module block from [main.tf](./main.tf). 
@@ -321,11 +323,23 @@ Modify the [main.tf](./main.tf) file in the root module using a text editor and 
 
 2. Update the [aws-tf-iam-role](./modules/aws-tf-iam-role/) module block for prowler_iam_cross_account_role_# in [main.tf](./main.tf) in the root directory. The code should look similar to the examples below:
    
-    **Example 1:**
+    **Example:**
     
     The prowler_s3 bucket should be the name of the bucket that was deployed by the [aws-tf-prowler-fargate](./modules/aws-tf-prowler-fargate/main.tf) module.
 
     ```
+    module "prowler_iam_cross_account_management_account" {
+    source = "./modules/aws-tf-iam-role"
+    providers = {
+        aws = aws.prowler_scan_management_account
+    }
+    
+    # The AWS account id for the account that will run Prowler.
+    deployment_accountid = var.deployment_accountid
+    prowler_s3 = "prowler-111111111111-us-west-2"
+
+    }
+
     module "prowler_iam_cross_account_role_1" {
     source = "./modules/aws-tf-iam-role"
     providers = {
@@ -333,23 +347,8 @@ Modify the [main.tf](./main.tf) file in the root module using a text editor and 
     }
     
     # The AWS account id for the account that will run Prowler.
-    deployment_accountid = var.deployment_accountid
+    deployment_accountid = 1111111111
     prowler_s3 = "prowler-1111111111-us-west-2"
-
-    }
-    ```
-
-    **Example 2:**
-    ```
-    module "prowler_iam_cross_account_role_2" {
-    source = "./modules/aws-tf-iam-role"
-    providers = {
-        aws = aws.prowler_account_scan_account_2
-    }
-    
-    # The AWS account id for the account that will run Prowler.
-    deployment_accountid = "222222222222"
-    prowler_s3 = "prowler-222222222222-us-west-2"
 
     }
     ```
@@ -361,6 +360,12 @@ Modify the [main.tf](./main.tf) file in the root module using a text editor and 
     Example of [providers.tf](./providers.tf) configuration to deploy to multiple accounts.
 
     ```
+    # Prowler Scan Management Account
+    provider "aws" {
+    region = var.region_primary
+    alias   = "prowler_scan_management_account"
+    }
+
     # Prowler Scan Account 1
     provider "aws" {
     region = var.region_primary
