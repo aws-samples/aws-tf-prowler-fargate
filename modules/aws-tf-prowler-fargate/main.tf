@@ -83,8 +83,8 @@ resource "aws_ecs_cluster" "prowler_ecs_cluster" {
   tags = var.tags
 }
 
-resource "aws_ecs_task_definition" "prowler_ecs_task_definition" {
-  family                   = var.ecs_task_definition_name
+resource "aws_ecs_task_definition" "prowler_ecs_task_definition_1" {
+  family                   = var.ecs_task_definition_name_1
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
   task_role_arn            = aws_iam_role.prowler_role.arn
   requires_compatibilities = ["FARGATE"]
@@ -125,6 +125,14 @@ resource "aws_ecs_task_definition" "prowler_ecs_task_definition" {
       {
         "name": "ROLE",
         "value": "${aws_iam_role.prowler_role.name}"
+      },
+      {
+        "name": "PROWLER_SCAN_TYPE",
+        "value": ${var.prowler_scan_type_1}
+      },
+      {
+        "name": "PROWLER_OUTPUT_FORMAT",
+        "value": ${var.prowler_output_format}
       }
     ]
   }
@@ -132,6 +140,62 @@ resource "aws_ecs_task_definition" "prowler_ecs_task_definition" {
   DEFINITION
 }
 
+resource "aws_ecs_task_definition" "prowler_ecs_task_definition_2" {
+  family                   = var.ecs_task_definition_name_2
+  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+  task_role_arn            = aws_iam_role.prowler_role.arn
+  requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
+  cpu                      = var.fargate_task_cpu
+  memory                   = var.fargate_memory
+  tags = merge(
+    var.tags,
+    {
+      Name = "${var.container_name}-task"
+    },
+  )
+  container_definitions = <<DEFINITION
+  [
+  {
+    "image": "${var.ecr_image_uri}",
+    "essential": true,
+    "name": "${var.container_name}",
+    "networkMode": "awsvpc",
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "secretOptions": null,
+      "options": {
+        "awslogs-group": "/ecs/${var.container_name}",
+        "awslogs-region": "${data.aws_region.current.name}",
+        "awslogs-stream-prefix": "${var.cwe_log_prefix}"
+      }
+    },
+    "environment": [
+      {
+        "name": "S3BUCKET",
+        "value": "${aws_s3_bucket.prowler_bucket.id}"
+      },
+      {
+        "name": "S3ACCOUNT",
+        "value": "${data.aws_caller_identity.current.account_id}"
+      },
+      {
+        "name": "ROLE",
+        "value": "${aws_iam_role.prowler_role.name}"
+      },
+      {
+        "name": "PROWLER_SCAN_TYPE",
+        "value": ${var.prowler_scan_type_2}
+      },
+      {
+        "name": "PROWLER_OUTPUT_FORMAT",
+        "value": ${var.prowler_output_format}
+      }
+    ]
+  }
+]
+  DEFINITION
+}
 # Amazon CloudWatch configuration
 resource "aws_cloudwatch_log_group" "prowler_cw_log_group" {
   name              = "/ecs/${var.container_name}"
@@ -205,7 +269,26 @@ resource "aws_cloudwatch_event_target" "Prowler_Scheduled_Scans" {
   role_arn = aws_iam_role.prowler_scheduled_task_event_role.arn
   ecs_target {
     launch_type         = "FARGATE"
-    task_definition_arn = aws_ecs_task_definition.prowler_ecs_task_definition.arn
+    task_definition_arn = aws_ecs_task_definition.prowler_ecs_task_definition_1.arn
+    task_count          = "1"
+    platform_version    = var.fargate_platform_version
+
+    network_configuration {
+      security_groups  = [var.prowler_container_sg_id]
+      subnets          = [var.prowler_container_vpc_subnet_id]
+      assign_public_ip = var.assign_container_public_ip
+    }
+  }
+}
+
+# Running ECS tasks on a scheduled basis
+resource "aws_cloudwatch_event_target" "Prowler_Scheduled_Scans" {
+  rule     = aws_cloudwatch_event_rule.prowler_task_scheduling_rule.name
+  arn      = aws_ecs_cluster.prowler_ecs_cluster.arn
+  role_arn = aws_iam_role.prowler_scheduled_task_event_role.arn
+  ecs_target {
+    launch_type         = "FARGATE"
+    task_definition_arn = aws_ecs_task_definition.prowler_ecs_task_definition_2.arn
     task_count          = "1"
     platform_version    = var.fargate_platform_version
 

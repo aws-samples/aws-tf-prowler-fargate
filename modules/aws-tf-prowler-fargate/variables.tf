@@ -49,6 +49,24 @@ variable "cwe_log_prefix" {
   description = "Prefix for CloudWatch Event Log Group"
 }
 
+variable "prowler_scan_type_1" {
+  type        = string
+  default     = "cislevel2"
+  description = "The scan type you want Prowler to perform"
+}
+
+variable "prowler_scan_type_2" {
+  type        = string
+  default     = "extras"
+  description = "The scan type you want Prowler to perform"
+}
+
+variable "prowler_output_format" {
+  type        = string
+  default     = "csv"
+  description = "The Prowler report output format (csv,html,json)"
+}
+
 variable "prowler_schedule_task_expression" {
   type        = string
   default     = "rate(7 days)"

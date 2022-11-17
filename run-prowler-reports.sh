@@ -6,6 +6,8 @@
 echo "S3BUCKET:       $S3BUCKET"
 echo "S3ACCOUNT:      $S3ACCOUNT"
 echo "ROLE:           $ROLE"
+echo "PROWLER SCAN TYPE: $PROWLER_SCAN_TYPE"
+echo "PROWLER OUTPUT FORMAT: $PROWLER_OUTPUT_FORMAT"
 
 # Create the Prowler Output Directory if it doesn't exist
 ls ./output
@@ -69,41 +71,6 @@ s3_account_session() {
 }
 
 
-prowler_get_config() {
-    s3_account_session
-    #Obtain Prowler Config
-    aws s3 cp s3://"$S3BUCKET"/config/prowler-config.txt ./config/
-
-    # Get the scan group details from the Prowler config file
-    PROWLER_SCAN_GROUP=$(grep -i -e "^PROWLER_SCAN_GROUP=.*$" ./config/prowler-config.txt | sed 's/PROWLER_SCAN_GROUP=//g' | sed -e 's/[[:space:]]*//g')
-    echo "[Prowler Config] Selected Group $PROWLER_SCAN_GROUP."
-
-    prowler_scan_group_word_count=$(echo $PROWLER_SCAN_GROUP | wc -w)
-
-    if [ $prowler_scan_group_word_count == 0 ];then 
-        echo "[Prowler Config]: Your config file doesn't have an scan groups listed. Defaulting to cislevel2";
-        PROWLER_SCAN_GROUP="cislevel2";
-    fi
-
-    # Get the output formats from the Prowler config file
-    PROWLER_OUTPUT_FORMAT=$(grep -i -e "^PROWLER_OUTPUT_FORMAT=.*$" ./config/prowler-config.txt | sed 's/PROWLER_OUTPUT_FORMAT=//g' | sed -e 's/[[:space:]]*//g')
-    echo "[Prowler Config] Selected Output Format $PROWLER_OUTPUT_FORMAT."
-
-    prowler_output_format_word_count=$(echo $PROWLER_OUTPUT_FORMAT | wc -w)
-
-    if [ $prowler_output_format_word_count == 0 ];then 
-        echo "[Prowler Config]: Your config file doesn't have an output format listed. Defaulting to csv";
-        PROWLER_OUTPUT_FORMAT="csv";
-    fi
-    
-    export PROWLER_SCAN_GROUP
-    export PROWLER_OUTPUT_FORMAT
-
-}
-
-# Get the Prowler Run Variables
-prowler_get_config
-
 
 # Lookup All Accounts in AWS Organization
 master_account_session
@@ -126,7 +93,7 @@ for accountId in $ACCOUNTS_IN_ORGS; do
         echo -e "Assessing AWS Account: $accountId, using Role: $ROLE on $(date)"
         
         # remove -g cislevel for a full report and add other formats if needed
-        ./prowler -R "$ROLE" -A "$accountId" -g "$PROWLER_SCAN_GROUP" -M "$PROWLER_OUTPUT_FORMAT"
+        ./prowler -R "$ROLE" -A "$accountId" -g "$PROWLER_SCAN_TYPE" -M "$PROWLER_OUTPUT_FORMAT"
 
         echo "Report stored locally at: prowler/output/ directory"
         TOTAL_SEC=$((SECONDS - START_TIME))
@@ -137,7 +104,7 @@ for accountId in $ACCOUNTS_IN_ORGS; do
         # Upload Prowler Report to S3
         echo "Prowler Assessment Completed for $accountId. Copying report file to S3 $S3BUCKET."
         s3_account_session
-        aws s3 mv ./output/ s3://"$S3BUCKET"/reports/"$PROWLER_SCAN_GROUP" --recursive --include "*.html" --acl bucket-owner-full-control
+        aws s3 mv ./output/ s3://"$S3BUCKET"/reports/"$PROWLER_SCAN_TYPE" --recursive --include "*.html" --acl bucket-owner-full-control
         echo "Assessment reports for $accountId successfully copied to S3 bucket"
     } &
 done
