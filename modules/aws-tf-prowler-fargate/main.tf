@@ -203,9 +203,16 @@ resource "aws_cloudwatch_log_group" "prowler_cw_log_group" {
   tags              = var.tags
 }
 
-resource "aws_cloudwatch_event_rule" "prowler_task_scheduling_rule" {
-  name                = "${var.ecs_task_definition_name}-prowler-task"
-  description         = "Run ${var.ecs_task_definition_name} Task at a scheduled time (${var.prowler_schedule_task_expression}) - Managed by Terraform"
+resource "aws_cloudwatch_event_rule" "prowler_task_scheduling_rule_1" {
+  name                = "${var.ecs_task_definition_name_1}-prowler-task"
+  description         = "Run ${var.ecs_task_definition_name_1} Task at a scheduled time (${var.prowler_schedule_task_expression}) - Managed by Terraform"
+  schedule_expression = var.prowler_schedule_task_expression
+  tags                = var.tags
+}
+
+resource "aws_cloudwatch_event_rule" "prowler_task_scheduling_rule_2" {
+  name                = "${var.ecs_task_definition_name_2}-prowler-task"
+  description         = "Run ${var.ecs_task_definition_name_2} Task at a scheduled time (${var.prowler_schedule_task_expression}) - Managed by Terraform"
   schedule_expression = var.prowler_schedule_task_expression
   tags                = var.tags
 }
@@ -263,7 +270,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_policy" {
 }
 
 # Running ECS tasks on a scheduled basis
-resource "aws_cloudwatch_event_target" "Prowler_Scheduled_Scans" {
+resource "aws_cloudwatch_event_target" "Prowler_Scheduled_Scans_1" {
   rule     = aws_cloudwatch_event_rule.prowler_task_scheduling_rule.name
   arn      = aws_ecs_cluster.prowler_ecs_cluster.arn
   role_arn = aws_iam_role.prowler_scheduled_task_event_role.arn
@@ -282,7 +289,7 @@ resource "aws_cloudwatch_event_target" "Prowler_Scheduled_Scans" {
 }
 
 # Running ECS tasks on a scheduled basis
-resource "aws_cloudwatch_event_target" "Prowler_Scheduled_Scans" {
+resource "aws_cloudwatch_event_target" "Prowler_Scheduled_Scans_2" {
   rule     = aws_cloudwatch_event_rule.prowler_task_scheduling_rule.name
   arn      = aws_ecs_cluster.prowler_ecs_cluster.arn
   role_arn = aws_iam_role.prowler_scheduled_task_event_role.arn

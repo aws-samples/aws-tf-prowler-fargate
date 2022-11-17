@@ -14,11 +14,18 @@ variable "ecs_cluster_name" {
   default     = "prowler-security-assessment-cluster"
   description = "AWS Fargate Cluster Name"
 }
-variable "ecs_task_definition_name" {
+variable "ecs_task_definition_name_1" {
   type        = string
-  default     = "prowler-security-assessment"
+  default     = "prowler-security-assessment-1"
   description = "Unique ECS Task Definition Name"
 }
+
+variable "ecs_task_definition_name_2" {
+  type        = string
+  default     = "prowler-security-assessment-2"
+  description = "Unique ECS Task Definition Name"
+}
+
 variable "ecs_task_execution_role" {
   type        = string
   description = "Name of the IAM role that allows Fargate to publish logs to CloudWatch and to download Prowler image from Amazon ECR."
