@@ -137,7 +137,7 @@ for accountId in $ACCOUNTS_IN_ORGS; do
         # Upload Prowler Report to S3
         echo "Prowler Assessment Completed for $accountId. Copying report file to S3 $S3BUCKET."
         s3_account_session
-        aws s3 mv ./output/ s3://"$S3BUCKET"/reports/ --recursive --include "*.html" --acl bucket-owner-full-control
+        aws s3 mv ./output/ s3://"$S3BUCKET"/reports/"$PROWLER_SCAN_GROUP" --recursive --include "*.html" --acl bucket-owner-full-control
         echo "Assessment reports for $accountId successfully copied to S3 bucket"
     } &
 done
