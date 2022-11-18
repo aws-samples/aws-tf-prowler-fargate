@@ -94,7 +94,7 @@ resource "aws_ecs_task_definition" "prowler_ecs_task_definition_1" {
   tags = merge(
     var.tags,
     {
-      Name = "${var.container_name}-task"
+      Name = "${var.ecs_task_definition_name_1}-task"
     },
   )
   container_definitions = <<DEFINITION
@@ -102,15 +102,15 @@ resource "aws_ecs_task_definition" "prowler_ecs_task_definition_1" {
   {
     "image": "${var.ecr_image_uri}",
     "essential": true,
-    "name": "${var.container_name}",
+    "name": "${var.ecs_task_definition_name_1}",
     "networkMode": "awsvpc",
     "logConfiguration": {
       "logDriver": "awslogs",
       "secretOptions": null,
       "options": {
-        "awslogs-group": "/ecs/${var.container_name}",
+        "awslogs-group": "/ecs/${var.ecs_task_definition_name_1}",
         "awslogs-region": "${data.aws_region.current.name}",
-        "awslogs-stream-prefix": "${var.cwe_log_prefix}"
+        "awslogs-stream-prefix": "${var.cwe_log_prefix_1}"
       }
     },
     "environment": [
@@ -128,11 +128,11 @@ resource "aws_ecs_task_definition" "prowler_ecs_task_definition_1" {
       },
       {
         "name": "PROWLER_SCAN_TYPE",
-        "value": ${var.prowler_scan_type_1}
+        "value": "${var.prowler_scan_type_1}"
       },
       {
         "name": "PROWLER_OUTPUT_FORMAT",
-        "value": ${var.prowler_output_format}
+        "value": "${var.prowler_output_format}"
       }
     ]
   }
@@ -151,7 +151,7 @@ resource "aws_ecs_task_definition" "prowler_ecs_task_definition_2" {
   tags = merge(
     var.tags,
     {
-      Name = "${var.container_name}-task"
+      Name = "${var.ecs_task_definition_name_2}-task"
     },
   )
   container_definitions = <<DEFINITION
@@ -159,15 +159,15 @@ resource "aws_ecs_task_definition" "prowler_ecs_task_definition_2" {
   {
     "image": "${var.ecr_image_uri}",
     "essential": true,
-    "name": "${var.container_name}",
+    "name": "${var.ecs_task_definition_name_2}",
     "networkMode": "awsvpc",
     "logConfiguration": {
       "logDriver": "awslogs",
       "secretOptions": null,
       "options": {
-        "awslogs-group": "/ecs/${var.container_name}",
+        "awslogs-group": "/ecs/${var.ecs_task_definition_name_2}",
         "awslogs-region": "${data.aws_region.current.name}",
-        "awslogs-stream-prefix": "${var.cwe_log_prefix}"
+        "awslogs-stream-prefix": "${var.cwe_log_prefix_2}"
       }
     },
     "environment": [
@@ -185,11 +185,11 @@ resource "aws_ecs_task_definition" "prowler_ecs_task_definition_2" {
       },
       {
         "name": "PROWLER_SCAN_TYPE",
-        "value": ${var.prowler_scan_type_2}
+        "value": "${var.prowler_scan_type_2}"
       },
       {
         "name": "PROWLER_OUTPUT_FORMAT",
-        "value": ${var.prowler_output_format}
+        "value": "${var.prowler_output_format}"
       }
     ]
   }
@@ -197,8 +197,14 @@ resource "aws_ecs_task_definition" "prowler_ecs_task_definition_2" {
   DEFINITION
 }
 # Amazon CloudWatch configuration
-resource "aws_cloudwatch_log_group" "prowler_cw_log_group" {
-  name              = "/ecs/${var.container_name}"
+resource "aws_cloudwatch_log_group" "prowler_cw_log_group_1" {
+  name              = "/ecs/${var.ecs_task_definition_name_1}"
+  retention_in_days = var.log_retention_in_days
+  tags              = var.tags
+}
+
+resource "aws_cloudwatch_log_group" "prowler_cw_log_group_2" {
+  name              = "/ecs/${var.ecs_task_definition_name_2}"
   retention_in_days = var.log_retention_in_days
   tags              = var.tags
 }
@@ -271,7 +277,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_policy" {
 
 # Running ECS tasks on a scheduled basis
 resource "aws_cloudwatch_event_target" "Prowler_Scheduled_Scans_1" {
-  rule     = aws_cloudwatch_event_rule.prowler_task_scheduling_rule.name
+  rule     = aws_cloudwatch_event_rule.prowler_task_scheduling_rule_1.name
   arn      = aws_ecs_cluster.prowler_ecs_cluster.arn
   role_arn = aws_iam_role.prowler_scheduled_task_event_role.arn
   ecs_target {
@@ -290,7 +296,7 @@ resource "aws_cloudwatch_event_target" "Prowler_Scheduled_Scans_1" {
 
 # Running ECS tasks on a scheduled basis
 resource "aws_cloudwatch_event_target" "Prowler_Scheduled_Scans_2" {
-  rule     = aws_cloudwatch_event_rule.prowler_task_scheduling_rule.name
+  rule     = aws_cloudwatch_event_rule.prowler_task_scheduling_rule_2.name
   arn      = aws_ecs_cluster.prowler_ecs_cluster.arn
   role_arn = aws_iam_role.prowler_scheduled_task_event_role.arn
   ecs_target {

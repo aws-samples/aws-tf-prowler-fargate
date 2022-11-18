@@ -50,9 +50,14 @@ variable "container_name" {
   default     = "prowler-security-assessment-task"
   description = "Name of the Container within AWS Fargate"
 }
-variable "cwe_log_prefix" {
+variable "cwe_log_prefix_1" {
   type        = string
-  default     = "prowlerassessment"
+  default     = "prowlerassessment-1"
+  description = "Prefix for CloudWatch Event Log Group"
+}
+variable "cwe_log_prefix_2" {
+  type        = string
+  default     = "prowlerassessment-2"
   description = "Prefix for CloudWatch Event Log Group"
 }
 
