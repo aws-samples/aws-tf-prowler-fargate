@@ -45,36 +45,54 @@ data "aws_iam_policy_document" "crossaccount_policy" {
   statement {
     sid = "AllowMoreReadForProwler"
     actions = [
-      "access-analyzer:List*",
-      "apigateway:Get*",
-      "apigatewayv2:Get*",
-      "aws-marketplace:ViewSubscriptions",
-      "dax:ListTables",
-      "ds:ListAuthorizedApplications",
-      "ds:DescribeRoles",
-      "ec2:GetEbsEncryptionByDefault",
-      "ecr:Describe*",
-      "lambda:GetAccountSettings",
-      "lambda:GetFunctionConfiguration",
-      "lambda:GetLayerVersionPolicy",
-      "lambda:GetPolicy",
-      "opsworks-cm:Describe*",
-      "opsworks:Describe*",
-      "secretsmanager:ListSecretVersionIds",
-      "sns:List*",
-      "sqs:ListQueueTags",
-      "states:ListActivities",
-      "support:Describe*",
-      "tag:GetTagKeys",
-      "shield:GetSubscriptionState",
-      "shield:DescribeProtection",
-      "elasticfilesystem:DescribeBackupPolicy",
+        "account:Get*",
+        "appstream:Describe*",
+        "appstream:List*",
+        "backup:List*",
+        "cloudtrail:GetInsightSelectors",
+        "codeartifact:List*",
+        "codebuild:BatchGet*",
+        "drs:Describe*",
+        "ds:Get*",
+        "ds:Describe*",
+        "ds:List*",
+        "ec2:GetEbsEncryptionByDefault",
+        "ecr:Describe*",
+        "ecr:GetRegistryScanningConfiguration",
+        "elasticfilesystem:DescribeBackupPolicy",
+        "glue:GetConnections",
+        "glue:GetSecurityConfiguration*",
+        "glue:SearchTables",
+        "lambda:GetFunction*",
+        "logs:FilterLogEvents",
+        "macie2:GetMacieSession",
+        "s3:GetAccountPublicAccessBlock",
+        "shield:DescribeProtection",
+        "shield:GetSubscriptionState",
+        "securityhub:BatchImportFindings",
+        "securityhub:GetFindings",
+        "ssm:GetDocument",
+        "ssm-incidents:List*",
+        "support:Describe*",
+        "tag:GetTagKeys",
+        "wellarchitected:List*"
     ]
 
     effect    = "Allow"
     resources = ["*"]
   }
+   statement {
+    sid = "APIGatewayGet"
+    actions = [
+      "apigateway:Get*"
+    ]
 
+    effect = "Allow"
+    resources = [
+      "arn:aws:apigateway:*::/restapis/*",
+      "arn:aws:apigateway:*::/apis/*"
+    ]
+  }
   statement {
     sid = "AllowGetPutListObject"
     actions = [
